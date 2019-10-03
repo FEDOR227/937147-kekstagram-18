@@ -1,6 +1,6 @@
 'use strict';
 var PHOTOS_DESCRIPTION = 25;
-var NAMES = ['Артем'];
+var NAMES = ['Артем','Настя', 'Леля', 'Паша', 'Света', 'Андрей', 'Марина'];
 var COMMENTS = ['Всё отлично!', 'В целом всё неплохо.'];
 
 var picturesElement = document.querySelector('.pictures');
@@ -31,7 +31,7 @@ var generatePhotoDesc = function(index) {
 
 var generateCommentsArray = function() {
   var comments = [];
-  var commentsCount = getCommentsCount();
+  var commentsCount = getRandomInRange();
   for (var i = 0; i < commentsCount; i++) {
     comments.push({
       avatar: 'img/avatar-' + getRandomInRange(1, 6) + '.svg',
@@ -45,7 +45,7 @@ var generateCommentsArray = function() {
 
 var generatePhotosArray = function() {
   var photos = [];
-  for (var i = 0; i < PHOTOS_COUNT; i++) {
+  for (var i = 0; i < PHOTOS_DESCRIPTION; i++) {
     photos.push(generatePhotoDesc(i));
   }
 
