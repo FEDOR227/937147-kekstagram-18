@@ -1,6 +1,6 @@
 'use strict';
 var PHOTOS_DESCRIPTION = 25;
-var NAMES = ['Артем','Настя', 'Леля', 'Паша', 'Света', 'Андрей', 'Марина'];
+var NAMES = ['Артем', 'Настя', 'Леля', 'Паша', 'Света', 'Андрей', 'Марина'];
 var COMMENTS = ['Всё отлично!', 'В целом всё неплохо.'];
 
 var picturesElement = document.querySelector('.pictures');
@@ -8,19 +8,16 @@ var pictureTemplate = document.querySelector('#picture')
   .content
   .querySelector('.picture');
 
-var getCommentsCount = function() {
-  return getRandomInRange(0, 5);
-};
 
-var getRandomElement = function(array) {
+var getRandomElement = function (array) {
   return array[Math.floor(Math.random() * array.length)];
 };
 
-var getRandomInRange = function(min, max) {
+var getRandomInRange = function (min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 };
 
-var generatePhotoDesc = function(index) {
+var generatePhotoDesc = function (index) {
   return {
     url: 'photos/' + (index + 1) + '.jpg',
     description: 'Случайная фотография',
@@ -29,9 +26,9 @@ var generatePhotoDesc = function(index) {
   };
 };
 
-var generateCommentsArray = function() {
+var generateCommentsArray = function () {
   var comments = [];
-  var commentsCount = getRandomInRange();
+  var commentsCount = getRandomInRange(1, 5);
   for (var i = 0; i < commentsCount; i++) {
     comments.push({
       avatar: 'img/avatar-' + getRandomInRange(1, 6) + '.svg',
@@ -43,16 +40,17 @@ var generateCommentsArray = function() {
   return comments;
 };
 
-var generatePhotosArray = function() {
+var generatePhotosArray = function () {
   var photos = [];
   for (var i = 0; i < PHOTOS_DESCRIPTION; i++) {
     photos.push(generatePhotoDesc(i));
   }
 
+  console.log (photos);
   return photos;
 };
 
-var renderPhoto = function(photo) {
+var renderPhoto = function (photo) {
   var photoElement = pictureTemplate.cloneNode(true);
 
   photoElement.querySelector('.picture__comments').textContent = photo.comments.message;
@@ -63,7 +61,7 @@ var renderPhoto = function(photo) {
   return photoElement;
 };
 
-var renderPhotosToDOM = function(photos) {
+var renderPhotosToDOM = function (photos) {
   var fragment = document.createDocumentFragment();
   for (var i = 0; i < photos.length; i++) {
     fragment.appendChild(renderPhoto(photos[i]));
@@ -71,7 +69,7 @@ var renderPhotosToDOM = function(photos) {
   picturesElement.appendChild(fragment);
 };
 
-var init = function() {
+var init = function () {
   renderPhotosToDOM(generatePhotosArray());
 };
 
