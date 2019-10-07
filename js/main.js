@@ -46,7 +46,6 @@ var generatePhotosArray = function () {
     photos.push(generatePhotoDesc(i));
   }
 
-  console.log (photos);
   return photos;
 };
 
