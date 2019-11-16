@@ -1,118 +1,115 @@
 'use strict';
+(function () {
+  // Форма открытие и закртытие //
+  var uploadImgOverlay = document.querySelector('.img-upload__overlay');
+  var uploadFile = document.querySelector('#upload-file');
+  var closeFile = document.querySelector('#upload-cancel');
+  // Масштабирование Фотографий //
+  var buttonScaleSmaller = document.querySelector('.scale__control--smaller');
+  var buttonScaleBigger = document.querySelector('.scale__control--bigger');
+  var controlValueScale = document.querySelector('.scale__control--value');
+  var previewImageElement = document.querySelector('.img-upload__preview img');
+
+  // Обьекты //
+  var STEP = 25;
+  var FOOL = 100;
+  var PIN_LEFT_EXTREME_POSITION = 0;
+  var PERCENTAGE = 100;
+
+  // Перемещение ползунка и эффект  //
+
+  var effectLevelValueElement = document.querySelector('.effect-level__value');
+  var effectLevelPinElement = document.querySelector('.effect-level__pin');
+  var effectLevelLineElement = document.querySelector('.effect-level__line');
 
 
-var uploadInputElement = document.querySelector('.img-upload__input');
-var uploadFormElement = document.querySelector('.img-upload__overlay');
-var buttonCloseElement = uploadFormElement.querySelector('.img-upload__cancel');
-var pinElement = uploadFormElement.querySelector('.effect-level__pin');
-var effectLineElement = uploadFormElement.querySelector('.effect-level__line');
-var effectValueElement = uploadFormElement.querySelector('.effect-level__value');
-var effectsElements = uploadFormElement.querySelectorAll('.effects__radio');
-var imagePreview = uploadFormElement.querySelector('.img-upload__preview');
-var previewOriginalElement = uploadFormElement.querySelector('#effect-none');
-var sliderFormElement = uploadFormElement.querySelector('.effect-level');
-var hashtagsInputElement = uploadFormElement.querySelector('.text__hashtags');
+  var onUploadImgOverlayEscPress = function (evt) {
+    if (evt.keyCode === window.utils.ESC_KEYCODE) {
+      if (evt.target.classList.contains('text__hashtags') || evt.target.classList.contains('text__description')) {
+        return;
+      }
+      closeFile();
+    }
+  };
 
-var onPopupEscPress = function (evt) {
-    window.util.isEscEvent(evt, closePopup);
+
+  uploadFile.addEventListener('change', function () {
+    uploadImgOverlay.classList.remove('hidden');
+  });
+
+
+  closeFile.addEventListener('click', function () {
+    uploadImgOverlay.classList.add('hidden');
+    document.removeEventListener('keydown', onUploadImgOverlayEscPress);
+  });
+
+  //  получить интенсивность в зависимости от положения ползунка
+  var getEffectIntensity = function () {
+    return effectLevelPinElement.offsetLeft / effectLevelLineElement.clientWidth;
+  };
+
+  //  увеличить масштаб
+  var scaleUp = function () {
+    if (parseInt(controlValueScale.value, 10) < FOOL) {
+      controlValueScale.value = parseInt(controlValueScale.value, 10) + STEP + '%';
+    }
+  };
+
+  //  уменьшить масштаб
+  var scaleDown = function () {
+    if (parseInt(controlValueScale.value, 10) > STEP) {
+      controlValueScale.value = parseInt(controlValueScale.value, 10) - STEP + '%';
+    }
+  };
+
+  //  применить масштаб к превью-картинке
+  var setScaleToPreviewImage = function () {
+    previewImageElement.style.transform = 'scale(' + parseInt(controlValueScale.value, 10) / 100 + ')';
+  };
+
+  buttonScaleSmaller.addEventListener('click', function () {
+    scaleDown();
+    setScaleToPreviewImage();
+  });
+
+  buttonScaleBigger.addEventListener('click', function () {
+    scaleUp();
+    setScaleToPreviewImage();
+  });
+
+  //  обработка изменения положения ползунка интенсивности эффекта
+  var startX = 0;
+
+  var onMouseMove = function (moveEvt) {
+    moveEvt.preventDefault();
+
+    var shiftX = startX - moveEvt.clientX;
+    startX = moveEvt.clientX;
+
+    var pinNewPosition = effectLevelPinElement.offsetLeft - shiftX;
+
+    if (pinNewPosition < PIN_LEFT_EXTREME_POSITION || pinNewPosition > effectLevelLineElement.clientWidth) {
+      return;
+} else {
+      effectLevelPinElement.style.left = pinNewPosition + 'px';
+    }
+  };
+
+  var onMouseUp = function (upEvt) {
+    upEvt.preventDefault();
+
+    effectLevelValueElement.value = Math.round(getEffectIntensity() * PERCENTAGE);
+
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mousemove', onMouseUp);
 };
 
-var closePopup = function () {
-    window.util.hide(uploadFormElement);
-    document.removeEventListener('keydown', onPopupEscPress);
-    uploadInputElement.value = uploadInputElement.defaultValue;
-};
+  effectLevelPinElement.addEventListener('mousedown', function (evt) {
+    evt.preventDefault();
 
-buttonCloseElement.addEventListener('click', function () {
-    closePopup();
-});
+    startX = evt.clientX;
 
-var setValue = function (value) {
-    pinElement.style.left = value + '%';
-    effectValueElement.setAttribute('value', value);
-
-    var effectName = uploadFormElement.querySelector('.effects__list input:checked').value;
-    var currentFilter = filters[effectName];
-    if (currentFilter) {
-    var photoStyle = currentFilter.name + '('
-       ((currentFilter.maxValue - currentFilter.minValue) * effectValueElement.value + currentFilter.minValue) / 100
-    currentFilter.unit
-    ')';
-    imagePreview.style.filter = photoStyle;
-    window.util.show(sliderFormElement);
-    } else {
-    imagePreview.style.filter = 'none';
-    window.util.hide(sliderFormElement);
-    }
-};
-
-var onEffectClick = function () {
-    for (var i = 1; i < effectsElements.length; i++) {
-    effectsElements[i].addEventListener('click', function () {
-        setValue(100);
-    });
-    }
-};
-var isTooManyHashtags = function (array) {
-    return array.length > HASHTAG_COUNT;
-};
-
-var hasRepeats = function (array) {
-    for (var i = 0; i < array.length; i++) {
-    for (var j = i + 1; j < array.length; j++) {
-        if (array[i] === array[j]) {
-        return true;
-        }
-    }
-    }
-    return false;
-};
-var validateHashtag = function (hashtags) {
-    var hashtagStrings = hashtags.split(/\s+/g);
-    if (isTooManyHashtags(hashtagStrings)) {
-    return 'Слишком много хэштегов!';
-    }
-
-    if (hasRepeats(hashtagStrings)) {
-    return 'Хэштеги повторяются';
-    }
-
-    for (var i = 0; i < hashtagStrings.length; i++) {
-    if (!hashtagStrings[i].match(/^#[a-z]{1,19}$/i) && hashtagStrings[i] !== '') {
-        return 'Неправильный формат хэштега';
-    }
-    }
-    return '';
-};
-onEffectClick();
-
-uploadInputElement.addEventListener('change', function () {
-window.util.show(uploadFormElement);
-document.addEventListener('keydown', onPopupEscPress);
-setValue(100);
-});
-
-effectLineElement.addEventListener('mouseup', function (event) {
-var bounds = effectLineElement.getBoundingClientRect();
-  var value = (event.clientX - bounds.left) / bounds.width * 100;
-setValue(value);
-});
-
-previewOriginalElement.addEventListener('click', function () {
-imagePreview.style.filter = 'none';
-window.util.hide(sliderFormElement);
-});
-
-hashtagsInputElement.addEventListener('change', function () {
-    var hashtags = hashtagsInputElement.value;
-    hashtagsInputElement.setCustomValidity(validateHashtag(hashtags));
-});
-
-hashtagsInputElement.addEventListener('keydown', function (evt) {
-    window.util.isEscEvent(evt, function () {
-    evt.stopPropagation();
-    });
-});
-
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  });
 })();
-
